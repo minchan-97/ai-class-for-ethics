@@ -217,12 +217,21 @@ with tab1:
     with col_a:
         st.markdown("#### 📤 AI 답변")
         st.caption("직접 입력하거나 AI한테 받아보세요")
+
+        # 세션에서 초기값 가져오기
+        if "ai_answer" not in st.session_state:
+            st.session_state.ai_answer = ""
+
         ai_answer = st.text_area(
             "AI 답변",
+            value=st.session_state.ai_answer,
             placeholder="AI 답변을 여기에 붙여넣기 하거나\n아래 버튼으로 자동으로 받아보세요...",
             height=120,
             label_visibility="collapsed",
+            key="ai_answer_input",
         )
+        # 수동 입력 시 세션 업데이트
+        st.session_state.ai_answer = ai_answer
 
         if api_key and question.strip():
             if st.button("🤖 AI 답변 자동으로 받기", use_container_width=True):
@@ -235,14 +244,12 @@ with tab1:
                             messages=[{"role":"user","content":question}],
                             max_tokens=200,
                         )
-                        ai_answer = resp.choices[0].message.content.strip()
-                        st.session_state.ai_answer = ai_answer
+                        fetched = resp.choices[0].message.content.strip()
+                        st.session_state.ai_answer = fetched
+                        ai_answer = fetched
                         st.rerun()
                     except Exception as e:
                         st.error(f"AI 답변 실패: {e}")
-
-        if "ai_answer" in st.session_state and not ai_answer:
-            ai_answer = st.session_state.ai_answer
 
     # 검사 실행
     st.markdown("---")
